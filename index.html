@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oliwskie Skrzaty na Tropie</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f8ff;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #4CAF50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 20px;
+    }
+    .map-container {
+      width: 100%;
+      height: 400px;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 10px;
+    }
+    .groups {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .group {
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .group:hover {
+      transform: scale(1.03);
+    }
+    .group h2 {
+      color: #4CAF50;
+    }
+    .popup, .task-popup {
+      display: none;
+      position: fixed;
+      top: 10vh;
+      left: 10vw;
+      width: 80vw;
+      height: 80vh;
+      background-color: white;
+      padding: 20px;
+      z-index: 1000;
+      overflow: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      border-radius: 10px;
+    }
+    .popup .close-btn, .task-popup .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      font-size: 1em;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .popup-content, .task-popup-content {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 20px;
+    }
+    .task {
+      background-color: #e0f7e9;
+      border: 1px solid #c1e1c1;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+    .back-btn {
+      background-color: #ccc;
+      color: #333;
+      border: none;
+      padding: 10px;
+      font-size: 0.9em;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      align-self: flex-start;
+    }
+    .task-popup-content img {
+      max-width: 100%;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Oliwskie Skrzaty na Tropie</h1>
+  </header>
+
+  <main>
+    <div class="map-container">
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2247.5877799461176!2d18.556273076622177!3d54.41128107255401!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46fd752da2efbc99%3A0x92aeae0ccf0d4ef1!2sPark%20Oliwski!5e0!3m2!1spl!2spl!4v1712382436246" allowfullscreen="" loading="lazy"></iframe>
+    </div>
+
+    <div class="groups">
+      <section class="group" onclick="showPopup(1)">
+        <h2>Grupa 1: Tropiciele Natury</h2>
+        <p>Zadania i przygody w lesie, rozpoznawanie roślin i zwierząt.</p>
+      </section>
+
+      <section class="group" onclick="showPopup(2)">
+        <h2>Grupa 2: Poszukiwacze Skarbów</h2>
+        <p>Mapa, wskazówki i skarby do odnalezienia w różnych częściach Oliwy.</p>
+      </section>
+
+      <section class="group" onclick="showPopup(3)">
+        <h2>Grupa 3: Mali Odkrywcy Historii</h2>
+        <p>Poznawanie historii Oliwy przez zabawę, odwiedziny w muzeum i zabytkach.</p>
+      </section>
+
+      <section class="group" onclick="showPopup(4)">
+        <h2>Grupa 4: Eko-Skrzaty</h2>
+        <p>Zajęcia ekologiczne, sprzątanie parku, nauka segregacji odpadów.</p>
+      </section>
+    </div>
+  </main>
+
+  <div class="overlay" id="overlay" onclick="closeAllPopups()"></div>
+  <div class="popup" id="popup">
+    <button class="close-btn" onclick="closeAllPopups()">Zamknij</button>
+    <div class="popup-content" id="popupContent"></div>
+  </div>
+  <div class="task-popup" id="taskPopup">
+    <button class="close-btn" onclick="closeAllPopups()">Zamknij</button>
+    <div class="task-popup-content" id="taskPopupContent"></div>
+  </div>
+
+  <script>
+    const taskData = {
+      1: [
+        {
+          text: 'Szukaj mnie w zieleni',
+          image: 'https://upload.wikimedia.org/wikipedia/commons/5/58/Gdansk_Oliwa_Palmiarnia.jpg'
+        },
+        { text: 'Rozpoznaj ptaka po głosie.' },
+        { text: 'Znajdź mech lub paproć.' }
+      ],
+      2: [
+        {
+          text: 'Szukaj mnie tam, gdzie kwitnie wiśnia',
+          image: 'https://upload.wikimedia.org/wikipedia/commons/1/1d/Ogr%C3%B3d_Japo%C5%84ski_w_Parku_Oliwskim.jpg'
+        },
+        { text: 'Podążaj za mapą.' },
+        { text: 'Znajdź ukryty przedmiot.' }
+      ],
+      3: [
+        {
+          text: 'Poczuj się jak król, zwracaj uwagę na mur',
+          image: 'https://upload.wikimedia.org/wikipedia/commons/3/36/Palac_Opatow_Gdansk_Oliwa.jpg'
+        },
+        { text: 'Odszukaj herb Oliwy.' },
+        { text: 'Narysuj budynek z przeszłości.' }
+      ],
+      4: [
+        {
+          text: 'Wsłuchaj się w kamienne szepty',
+          image: 'https://upload.wikimedia.org/wikipedia/commons/4/47/Grota_szept%C3%B3w_Oliwa.jpg'
+        },
+        { text: 'Posadź roślinę.' },
+        { text: 'Zbierz śmieci w wyznaczonej strefie.' }
+      ]
+    };
+
+    let currentGroup = null;
+
+    function showPopup(group) {
+      currentGroup = group;
+      const popup = document.getElementById('popup');
+      const overlay = document.getElementById('overlay');
+      const popupContent = document.getElementById('popupContent');
+      popupContent.innerHTML = '';
+
+      const tasks = taskData[group];
+      if (tasks) {
+        tasks.forEach((task, index) => {
+          const taskElement = document.createElement('div');
+          taskElement.className = 'task';
+          taskElement.textContent = `Zadanie ${index + 1}`;
+          taskElement.onclick = () => showTaskPopup(task);
+          popupContent.appendChild(taskElement);
+        });
+        popup.style.display = 'block';
+        overlay.style.display = 'block';
+      }
+    }
+
+    function showTaskPopup(task) {
+      document.getElementById('popup').style.display = 'none';
+      const taskPopup = document.getElementById('taskPopup');
+      const taskPopupContent = document.getElementById('taskPopupContent');
+      taskPopupContent.innerHTML = '';
+
+      const content = document.createElement('div');
+      content.className = 'task';
+      content.innerHTML = task.text;
+
+      if (task.image) {
+        const img = document.createElement('img');
+        img.src = task.image;
+        content.appendChild(document.createElement('br'));
+        content.appendChild(img);
+      }
+
+      const backBtn = document.createElement('button');
+      backBtn.className = 'back-btn';
+      backBtn.textContent = 'Powrót do zadań';
+      backBtn.onclick = () => {
+        document.getElementById('taskPopup').style.display = 'none';
+        showPopup(currentGroup);
+      };
+
+      taskPopupContent.appendChild(content);
+      taskPopupContent.appendChild(backBtn);
+      taskPopup.style.display = 'block';
+    }
+
+    function closeAllPopups() {
+      document.getElementById('popup').style.display = 'none';
+      document.getElementById('taskPopup').style.display = 'none';
+      document.getElementById('overlay').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
